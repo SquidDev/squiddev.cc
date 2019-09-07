@@ -1,0 +1,19 @@
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  file[label="let file = input_file name"];
+
+  result[label="let result = fn file"];
+  result -> file[style=dashed];
+  result -> file;
+
+  a[label="let a = close_in file"];
+  a -> result[style=dashed];
+  a -> file;
+
+  b[label="result"];
+  b -> result;
+  b -> a[weight=2,style=dashed];
+}

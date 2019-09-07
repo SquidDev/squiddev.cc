@@ -1,0 +1,20 @@
+digraph G {
+  rankdir = "RL";
+  clusterrank = "local";
+  ordering = "in";
+
+  c[label="let c = <to_string>"];
+
+  d[label="let d = c n"]
+  d -> c[weight=2];
+
+  e[label="let e = (| d, \"!\\n\")"];
+  e -> d[weight=2];
+
+  f[label="let f = ^ e"];
+  f -> e[weight=2];
+
+  g[label="let g = io_write f"];
+  g -> f[weight=2];
+  g -> d[style=dashed];
+}

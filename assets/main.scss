@@ -1,0 +1,253 @@
+@import "reset.scss";
+
+@mixin link($normal, $hover) {
+    a {
+        &, &:visited, &:active { color: $normal; }
+        &:hover { color: $hover; }
+    }
+}
+
+@mixin default-link {
+    @include link(#0000ee, darken(#0000ee, 20%));
+    a:hover { background-color: rgba(0,0,0,0.1); }
+}
+
+body {
+    margin:40px auto;
+    max-width:1000px;
+    line-height:1.6;
+    font-size:18px;
+    color:#333;
+    padding:0 10px;
+
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+h1, h2, h3 { line-height:1.2 }
+a { text-decoration: none; }
+strong { font-weight: bold; }
+
+pre, code {
+    font-family:"Consolas", "Courier New", monospace;
+    background-color:#f9f2f4
+}
+
+pre {
+    font-size:0.9em;
+    padding: 1em;
+
+    code {
+        background-color: inherit;
+        color: inherit;
+    }
+}
+
+code {
+    color:#c7254e;
+}
+
+pre.highlight, pre.sourceCode {
+  border: solid 1px #d0d0d0;
+  background-color: #fafafa;
+  padding: 0.5em;
+
+  code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0px;
+    font-size: inherit;
+  }
+
+  .kw, .cf { color: #c830cc; }
+  .dt { color: #4775e7; }
+
+  .o, .ow, .kd, .k, .kr { color: #ff0086; }
+  .s, .ch, .st { color: #00c918; }
+  .s2, .kt { color: #fd8900; }
+  .c1, .co { color: #707070; }
+  .kc { color: #3777e6; }
+}
+
+blockquote {
+    background-color:#eee;
+    padding:5px 20px;
+    margin:10px 0px;
+    border-left:solid 5px #aaa;
+}
+
+header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .logo {
+        flex-basis: 30%;
+        max-width: 120px;
+        margin-right: 10px;
+    }
+
+    h1 {
+        font-size: 3em;
+        flex-grow: 1;
+    }
+
+    @media (max-width: 650px) {
+        .logo {
+            max-width: 30%;
+            max-width: 30%;
+        }
+
+        h1 {
+            font-size: 10vw;
+        }
+    }
+}
+
+
+
+.card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 150px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: box-shadow 0.3s;
+
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    &:hover { box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2); }
+
+    .logo {
+        flex-basis: 30%;
+        max-width: 150px;
+        padding: 15px;
+        box-sizing: border-box;
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            margin: 0 auto;
+        }
+    }
+
+    .card-body {
+        flex-grow: 1;
+        margin: 10px 5px;
+    }
+
+    h2 {
+        font-size: 1.4em;
+        font-weight: 700;
+    }
+
+    @media (max-width: 650px) {
+       & {
+           flex-direction: column;
+           align-items: center;
+       }
+
+       .logo {
+           flex-basis: 100px;
+           max-height: 100px;
+       }
+    }
+
+    a.card-link { color: inherit; }
+
+    a.card-link::before {
+        content: "";
+        position: absolute;
+        overflow: hidden;
+        whitespace: no-wrap;
+        top: 0px; bottom: 0px; left: 0px; right: 0px;
+        z-index: 1;
+    }
+
+    p {
+        margin: 0.5em 0em;
+
+        a {
+            font-weight: bold;
+            z-index: 2;
+            position: relative;
+        }
+    }
+
+    @mixin card($fore, $back, $hover, $link: #0000ee) {
+        color: $fore;
+        background-color: $back;
+        a.card-link:hover, a.card-link:hover ~ * { color: $hover; }
+
+        p {
+            @include link($link, darken($link, 20%));
+        }
+    }
+
+    &.urn-card { @include card(#5b3022, #e5a644, #a5573e); }
+    &.cobalt-card {
+        @include card(#000080, #ffffff, #3333b3);
+        a:hover { background-color: rgba(0,0,0,0.1); }
+    }
+    &.amulet-card { @include card(#216778, lighten(#5fbcd3, 20%), darken(#216778, 10%)); }
+    &.cct-card { @include card(#f0f0f0, #373737, #ffffff, #cc4c4c); }
+}
+
+.text-content {
+    h1, h2, h3 { margin: 0.8em 0em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+
+    p, pre { line-height: 1.6em; }
+    p, pre, ul, ol { margin: 1em 0em; }
+
+    ul, ol { padding-left: 2em; }
+    ul { list-style-type: disc; }
+    ol { list-style-type: decimal; }
+    sup { vertical-align: super; font-size: 0.8em; }
+
+    img {
+        margin: 0 auto;
+        max-height: 60vh;
+        max-width: 90%;
+        display: block;
+    }
+
+    @include default-link
+
+    .footnotes { font-size: 0.8em; }
+
+    figcaption {
+        text-align: center;
+        font-size: 0.8em;
+    }
+
+    li[id^="fn"]:target {
+        background: #f0f0f0;
+    }
+}
+
+.image-listing {
+    .image {
+        padding: 10px;
+        margin: 5px;
+        display: inline-block;
+
+        &:not(:first-child) { border-left: 1px #aaa solid; }
+        img { height: 150px; display: block; margin: 0px auto; }
+        a { display: block; text-align: center; }
+    }
+}

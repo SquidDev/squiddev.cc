@@ -1,0 +1,10 @@
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  g[label="let g = <io_write(to_string(n) .. \"!\\n\")>"];
+
+  y[label="let y = <go(i + 1)>"];
+  y -> g[style=dashed];
+}

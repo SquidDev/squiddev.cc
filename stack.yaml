@@ -1,0 +1,13 @@
+resolver: nightly-2019-06-27
+
+extra-deps:
+ - hakyll-4.12.5.2@sha256:435eec729639a4bf0d58f3c7c71929600f4130f10241275d5e7df856cc8aae90,8677
+ - hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
+#  - hakyll-4.12.5.2@sha256:435eec729639a4bf0d58f3c7c71929600f4130f10241275d5e7df856cc8aae90,8677
+#  - hakyll-sass-0.2.4@sha256:4d2fbd8b63f5ef15483fc6dda09e10eefd63b4f873ad38dec2a3607eb504a8ba,939
+#  - hsass-0.7.0@sha256:05a1c612051dc030cbc7bb702a239d3ceb62d601903f8ff41e3b76e2fe10da18,2792
+#  - skylighting-0.7.7@sha256:0339943c68b761f45cd046b32975224744ebfdcbf5dafd55e0364f412f490b7f,10194
+#  - skylighting-core-0.7.7@sha256:bcee301c4031c22937c1310512ca6d83b3660e2395b7797450bdfe755cde9200,8008
+
+require-stack-version: ">=1.9"
+compiler-check: newer-minor

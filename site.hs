@@ -54,7 +54,7 @@ main =
                                        , sassImporters = Just [ sassImporter ]
                                        }
 
-    match ("assets/**.png" .||. "*.ico") $ do
+    match ("assets/**.png" .||. "favicon.ico" .||. "robots.txt") $ do
         route   idRoute
         compile copyFileCompiler
 

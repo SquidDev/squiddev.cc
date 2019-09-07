@@ -68,8 +68,7 @@ when the exception is first caught, making handling a little easier to trace.
 In LuaJ, each coroutine is backed by a Java `Thread`. Most of the time, this isn't an issue, but there are a couple of
 extreme cases where it begins to cause problems. Back in November, the SwitchCraft server was repeatedly dying due to
 the sheer number of threads which ComputerCraft had created (250k, at a rate of 50/s). I've [written about this
-elsewhere](http://www.computercraft.info/forums2/index.php?/topic/29161-mc112fork-cc-tweaked/page__view__findpost__p__278557)
-and the steps we took to mitigate this.
+previously](/2018/11/24/thread-saturation.html) and the steps we took to mitigate this.
 
 However, this doesn't really address the underlying dilemma. Coroutines, which are meant to be used as a lightweight way
 of doing concurrency are really not. One should be comfortable that creating thousands of coroutines per second is not
@@ -87,6 +86,8 @@ switch" system.
 The solution is to have a system which supports both: if we are able to unwind the stack, we should do so. Otherwise, we
 fall back to the original threading code. It ends up being a little bit of a messy system, but incredibly effective -
 SwitchCraft, with its 250 computers, went from 2000 threads to 50.
+
+![Thread counts before and after this change](/assets/img/posts/2019-03-08-tweaking-cc-tweaked-threads.png)
 
 ## Better threading and preemption
 One important thing to note about ComputerCraft is that, like a real computer, only one computer is doing one thing at

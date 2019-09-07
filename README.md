@@ -1,6 +1,6 @@
 # [![](/assets/img/ico/favicon-32x32.png) squiddev.cc][squid]
 
-This is my personal website, currently hosted at [squidev.cc][squid] and
+This is my personal website, currently hosted at [squiddev.cc][squid] and
 [joncoates.co.uk][jonathan].
 
 This website is written generated using [Hakyll][hakyll], and can be built with

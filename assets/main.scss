@@ -219,8 +219,8 @@ header {
     ol { list-style-type: decimal; }
     sup { vertical-align: super; font-size: 0.8em; }
 
+    table, img { margin: 0 auto; }
     img {
-        margin: 0 auto;
         max-height: 60vh;
         max-width: 90%;
         display: block;
@@ -237,6 +237,11 @@ header {
 
     li[id^="fn"]:target {
         background: #f0f0f0;
+    }
+
+    table td {
+        border: 1px solid;
+        padding: 5px;
     }
 }
 

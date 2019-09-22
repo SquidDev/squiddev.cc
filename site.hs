@@ -78,7 +78,7 @@ main =
           >>= applyAsTemplate ctx
           >>= defaultTemplate
 
-    matchMetadata "posts/*" isPublished $ do
+    matchMetadata "posts/*.md" isPublished $ do
         -- Rosts/2018-10-12-foo.md to 2018/10/12/foo.html
         route $
           setExtension "html" `composeRoutes`
@@ -90,6 +90,12 @@ main =
               >>= saveSnapshot "content"
               >>= defaultTemplate
 
+    match "misc/*.md" $ do
+      route $ setExtension "html"
+      compile $ pandocCustomCompiler
+            >>= loadAndApplyTemplate "templates/basic.html" defaultContext
+            >>= defaultTemplate
+
     create ["atom.xml"] $ do
       route idRoute
       compile $ renderFeeds renderAtom
@@ -98,7 +104,7 @@ main =
       route idRoute
       compile $ renderFeeds renderRss
 
-    match "templates/*" $ compile templateBodyCompiler
+    match "templates/*.html" $ compile templateBodyCompiler
 
     match "syntax/*.xml" $ compile $ do
       path <- toFilePath <$> getUnderlying

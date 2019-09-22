@@ -216,7 +216,7 @@ It's pretty simple to see _what_ Lua code should be generated, but how do we get
 
 ```lua
 local x
-if x then x = b else x = c end
+if a then x = b else x = c end
 print(x)
 ```
 

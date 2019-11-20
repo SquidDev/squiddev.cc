@@ -140,8 +140,8 @@ bottom. Thankfully, we start off with something simple - type applications are e
 
 ![Translating a type application](/assets/img/posts/amulet-backend-go-01.png)
 
-`c` is only used once, so can be emitted inline in `d`. As mentioned earlier, this is an unboxed tuple, so we emit of
-expressions.
+`c` is only used once, so can be emitted inline in `d`. As mentioned earlier, this is an unboxed tuple, so we emit a
+list of expressions.
 
 ![Merging expressions](/assets/img/posts/amulet-backend-go-02.png)
 
@@ -245,7 +245,7 @@ There's clearly a lot of work still to be done on the codegen. One obvious missi
 function are not compiled to loops. We're still discussing whether this should be done directly, or by augmenting Core
 with join points or [CwCwW][cwc]'s $\mathscr{C}$ operator, but it should hopefully appear in the next five years.
 
-[amulet]: https://amulet.squiddev.cc/ "Amulet's (rather lacklustre) website"
+[amulet]: https://github.com/amuletml/amulet/ "Amulet's GitHub repository"
 [hydraz]: https://hydraz.semi.works/ "hydraz's personal website. Plenty of Amulet stuff here too!"
 [bug]: https://github.com/tmpim/amulet/issues/163 "Issue #163 on GitHub - Ordering can ignore IO in non-inlined cases"
 [anf]: https://en.wikipedia.org/wiki/A-normal_form

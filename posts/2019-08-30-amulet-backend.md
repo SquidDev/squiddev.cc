@@ -246,7 +246,7 @@ function are not compiled to loops. We're still discussing whether this should b
 with join points or [CwCwW][cwc]'s $\mathscr{C}$ operator, but it should hopefully appear in the next five years.
 
 [amulet]: https://github.com/amuletml/amulet/ "Amulet's GitHub repository"
-[hydraz]: https://hydraz.semi.works/ "hydraz's personal website. Plenty of Amulet stuff here too!"
+[hydraz]: https://abby.amulet.works/ "hydraz's personal website. Plenty of Amulet stuff here too!"
 [bug]: https://github.com/tmpim/amulet/issues/163 "Issue #163 on GitHub - Ordering can ignore IO in non-inlined cases"
 [anf]: https://en.wikipedia.org/wiki/A-normal_form
 [cwc]: https://www.cs.purdue.edu/homes/rompf/papers/cong-preprint201811.pdf "Compiling with Continuations, or without? Whatever."

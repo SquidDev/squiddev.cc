@@ -22,6 +22,7 @@ executable site
                      , hsass >= 0.7 && < 0.9
                      , mtl >= 2.2.2 && < 3.0
                      , pandoc >= 2.2 && < 3.0
+                     , pandoc-types >= 1.17 && < 2.0
                      , process >= 1.6.5 && < 2.0
                      , skylighting >= 0.7 && < 0.9
                      , tagsoup >= 0.14 && < 0.15

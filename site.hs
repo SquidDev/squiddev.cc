@@ -9,8 +9,10 @@ import Control.Concurrent
 import Control.Exception
 
 import qualified Data.ByteString.Lazy.Char8 as BS
+import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Digest.Pure.SHA as SHA
 import qualified Data.HashSet as HSet
+import qualified Data.Text.Lazy as L
 import Data.Function
 import Data.Functor
 import Data.Default
@@ -19,6 +21,7 @@ import Data.Char
 
 import qualified Text.HTML.TagSoup as TS
 import Text.Sass.Functions
+import Text.Pandoc.Walk
 import Text.Pandoc
 
 import Hakyll.Core.Configuration
@@ -287,12 +290,20 @@ writerOptions = do
     , writerSyntaxMap = syntaxMap
     }
 
-
 -- | The Pandoc compiler, but using our custom 'writerOptions'.
 pandocCustomCompiler :: Compiler (Item String)
 pandocCustomCompiler = do
   writer <- writerOptions
-  pandocCompilerWith defaultHakyllReaderOptions writer
+  pandocCompilerWithTransformM defaultHakyllReaderOptions writer (walkM transformInline)
+  where
+    transformInline :: Inline -> Compiler Inline
+    transformInline (Math kind math) = unsafeCompiler $ do
+      let args = case kind of
+            DisplayMath -> ["-Sd"]
+            InlineMath -> ["-S"]
+      (contents, _) <- readProcessBS "node_modules/.bin/katex" args . L.encodeUtf8 . L.pack $ math
+      pure . RawInline "html" . L.unpack . L.decodeUtf8 $ contents
+    transformInline x = pure x
 
 -- | A ByteString equivalent of readProcessWithExitCode (with some more exceptions)
 readProcessBS :: FilePath -> [String] -> BS.ByteString -> IO (BS.ByteString, String)

@@ -1,0 +1,16 @@
+{
+  "name": "squiddev.cc",
+  "version": "1.0.0",
+  "description": "My personal website",
+  "homepage": "https://github.com/SquidDev/squiddev.cc#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "katex": "^0.11.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SquidDev/squiddev.cc.git"
+  },
+  "author": "SquidDev",
+  "license": "BSD-3-Clause"
+}

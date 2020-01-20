@@ -2,3 +2,4 @@
 /_cache
 /.ghc.environment.*
 /.stack-work
+/node_modules

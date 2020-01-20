@@ -3,6 +3,7 @@ title: "Tweaking the internals of CC: Tweaked"
 date: 2019-03-08 20:11:00
 description: "We discuss some of the latest changes made to CC: Tweaked."
 tags: minecraft computercraft cobalt compilers
+math: true
 ---
 
 As I've [written about before](/2018/05/15/cc-track.html), I maintain a fondness of the Minecraft mod ComputerCraft. For
@@ -132,8 +133,6 @@ really like to see some solutions which make everything more maintainable. If yo
 else!) do drop me a line - I always want more ideas from the community.
 
 I guess I should probably be looking into persisting computer state too…
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 [^1]: You can see [the PR and associated diff](https://github.com/SquidDev/Cobalt/pull/20). The commit of interest (
       `9b6af10`) is only so big thanks to an extra `while` loop causing the indentation to change.

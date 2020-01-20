@@ -3,6 +3,7 @@ title: The Amulet backend
 date: 2019-08-30 19:35
 description: "An exploration of how Amulet's backend works"
 tags: haskell amulet compilers lua
+math: true
 ---
 
 [Amulet][amulet] is a small little language [Abigail][abigail] and I have been working on for a wee while. It's
@@ -256,4 +257,3 @@ with join points or [CwCwW][cwc]'s $\mathscr{C}$ operator, but it should hopeful
 [^compiling]: Well, obviously it is. After all, we're still converting from one representation to another.
 [^low]: Low-level in the same way Java bytecode is. We're not dealing with assembly here!
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>

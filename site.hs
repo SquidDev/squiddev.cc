@@ -88,13 +88,7 @@ main =
         compile $ pandocCustomCompiler
               >>= loadAndApplyTemplate "templates/basic.html" postCtx
               >>= saveSnapshot "content"
-              >>= defaultTemplate
-
-    match "misc/*.md" $ do
-      route $ setExtension "html"
-      compile $ pandocCustomCompiler
-            >>= loadAndApplyTemplate "templates/basic.html" defaultContext
-            >>= defaultTemplate
+              >>= defaultTemplateWith postCtx
 
     create ["atom.xml"] $ do
       route idRoute

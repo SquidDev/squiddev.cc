@@ -88,19 +88,26 @@ header {
 
     .logo {
         flex-basis: 30%;
-        max-width: 120px;
+        max-width: 100px;
         margin-right: 10px;
     }
 
     h1 {
-        font-size: 3em;
+        font-size: 2.5em;
         flex-grow: 1;
     }
 
+    .date {
+        flex-shrink: 0;
+        color: #666;
+    }
+
     @media (max-width: 650px) {
+        flex-direction: column;
+        align-items: start;
+
         .logo {
-            max-width: 30%;
-            max-width: 30%;
+            display: none;
         }
 
         h1 {

@@ -50,8 +50,13 @@
     <header>
       <a href="/"><img src="/assets/img/squid.png" alt="SquidDev" class="logo" /></a>
       <h1>$if(title)$$title$$else$$site.title$$endif$</h1>
+      $if(date)$ <span class="date">$date$</span> $endif$
     </header>
 
     $body$
+
+    $if(math)$
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    $endif$
   </body>
 </html>

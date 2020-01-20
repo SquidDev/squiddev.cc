@@ -227,8 +227,8 @@ header {
     ol { list-style-type: decimal; }
     sup { vertical-align: super; font-size: 0.8em; }
 
-    table, img { margin: 0 auto; }
-    img {
+    table, img, svg { margin: 0 auto; }
+    img, svg {
         max-height: 60vh;
         max-width: 90%;
         display: block;

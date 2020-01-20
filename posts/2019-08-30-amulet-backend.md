@@ -109,7 +109,63 @@ of IRs into idiomatic code, and so we've now got a whole wealth of inspiration t
 First of all, like many compiler problems, we'll start off with a graph. We want to convert every "leaf" term into a
 node on our graph, with the edges representing dependencies between the nodes:
 
-![Dependency graph for the `go` function.](/assets/img/posts/amulet-backend-stream.png)
+
+```{.dot title="Dependency graph for the `go` function."}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  subgraph cluster_2 {
+    label = "go";
+    labelloc = "b";
+
+    a[label="let a = (| n, 5 |)"];
+
+    b[label="let b = > a"];
+    b -> a[weight=2];
+
+    x[label="match b with"];
+    x -> b[weight=2,pos="0,0!"];
+
+    za[label="()"];
+    za -> x[style=dashed];
+
+    zb[label="Match Arm"];
+    zb -> x[style=dashed];
+  }
+
+  subgraph cluster_1 {
+    label = "Match arm";
+    labelloc = "b";
+
+    c[label="let c = to_string {int}"];
+
+    d[label="let d = c n"]
+    d -> c[weight=2];
+
+    e[label="let e = (| d, \"!\\n\")"];
+    e -> d[weight=2];
+
+    f[label="let f = ^ e"];
+    f -> e[weight=2];
+
+    g[label="let g = io_write f"];
+    g -> f[weight=2];
+    g -> d[style=dashed];
+
+    h[label="let h = (| n, 1 |)"];
+    h -> g[weight=2,style=invis,shape=none];
+
+    i[label="let i = + h"];
+    i -> h[weight=2];
+
+    y[label="go i"];
+    y -> i[weight=2];
+    y -> g[style=dashed];
+  }
+}
+```
 
 In this image, we have two kinds of dependencies:
 
@@ -139,22 +195,89 @@ expression. The translation rules are pretty much what you'd expect, but there's
 Let's step through how we'd translate the "Match arm" sub-graph in our above example. We'll just work from top to
 bottom. Thankfully, we start off with something simple - type applications are entirely discarded.
 
-![Translating a type application](/assets/img/posts/amulet-backend-go-01.png)
+```{.dot title="Translating a type application"}
+digraph G {
+  rankdir = "RL";
+  clusterrank = "local";
+  ordering = "in";
+
+  c[label="let c = <to_string>"];
+
+  d[label="let d = c n"]
+  d -> c[weight=2];
+
+  e[label="let e = (| d, \"!\\n\")"];
+  e -> d[weight=2];
+
+  f[label="let f = ^ e"];
+  f -> e[weight=2];
+
+  g[label="let g = io_write f"];
+  g -> f[weight=2];
+  g -> d[style=dashed];
+}
+```
 
 `c` is only used once, so can be emitted inline in `d`. As mentioned earlier, this is an unboxed tuple, so we emit a
 list of expressions.
 
-![Merging expressions](/assets/img/posts/amulet-backend-go-02.png)
+
+```{.dot title="Merging expressions"}
+digraph G {
+  rankdir = "RL";
+  clusterrank = "local";
+  ordering = "in";
+
+  d[label="let d = <to_string(n)>"]
+
+  e[label="let e = (| d, \"!\\n\")"];
+  e -> d[weight=2];
+
+  f[label="let f = ^ e"];
+  f -> e[weight=2];
+
+  g[label="let g = io_write f"];
+  g -> f[weight=2];
+  g -> d[style=dashed];
+}
+```
 
 Likewise, `d` can be merged into `e`. We need to be careful to replace any dependencies on `d`. In the actual
 implementation, we just alias `d` and `e` within the graph.
 
-![Merging expressions again, and rewriting dependencies.](/assets/img/posts/amulet-backend-go-03.png)
+
+```{.dot title="Merging expressions again, and rewriting dependencies."}
+digraph G {
+  rankdir = "RL";
+  clusterrank = "local";
+  ordering = "in";
+
+  e[label="let e = <to_string(n), \"!\\n\">"];
+
+  f[label="let f = ^ e"];
+  f -> e[weight=2];
+
+  g[label="let g = io_write f"];
+  g -> f[weight=2];
+  g -> e[style=dashed];
+}
+```
 
 Let's continue this for the rest of the "Match arm" sub-graph. We'll finish off this expression, and also the call to
 `go`.
 
-![The whole of the `match` arm compiled to Lua](/assets/img/posts/amulet-backend-go-04.png)
+```{.dot title="The whole of the `match` arm compiled to Lua"}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  g[label="let g = <io_write(to_string(n) .. \"!\\n\")>"];
+
+  y[label="let y = <go(i + 1)>"];
+  y -> g[style=dashed];
+}
+```
 
 We're sort of in the same place that we started off - we've a DAG of terms, with the dependencies between them. The
 crucial difference is that this graph is entirely composed of Lua code. We can trivially convert this into a program by
@@ -173,8 +296,27 @@ let with_file fn name =
 
 Let's convert this into a graph again.
 
+```{.dot title="`with_file`'s body as a Core graph"}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
 
-![`with_file`'s body as a Core graph](/assets/img/posts/amulet-backend-file.png)
+  file[label="let file = input_file name"];
+
+  result[label="let result = fn file"];
+  result -> file[style=dashed];
+  result -> file;
+
+  a[label="let a = close_in file"];
+  a -> result[style=dashed];
+  a -> file;
+
+  b[label="result"];
+  b -> result;
+  b -> a[weight=2,style=dashed];
+}
+```
 
 One mildly surprising part of this graph, is that our final `result` has a _control-flow_ dependency on `close_in
 file`. As this term will be converted into a `return` statement, we need to ensure that every other term has executed
@@ -183,17 +325,73 @@ before this one.
 The first couple of Lua transformations are pretty simple. We can't inline `file`, as it's is used multiple times, so we
 convert it into a `local` binding instead:
 
-![The initial translation of `with_file`](/assets/img/posts/amulet-backend-file-01.png)
+```{.dot title="The initial translation of `with_file`"}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  file[label="<local file = input_file(name)>"];
+
+  result[label="let result = <fn(file)>"];
+  result -> file[style=dashed];
+  result -> file;
+
+  a[label="let a = <close_in(file)>"];
+  a -> result[style=dashed];
+  a -> file;
+
+  b[label="result"];
+  b -> result;
+  b -> a[weight=2,style=dashed];
+}
+```
 
 Now, we only need to emit this final `result`. This should be pretty simple - it's only used once, so we can simply inline it.
 
-![A malformed graph, due to merging `result`](/assets/img/posts/amulet-backend-file-02.png)
+```{.dot title="A malformed graph, due to merging `result`"}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  file[label="<local file = input_file(name)>"];
+
+  a[label="let a = <close_in(file)>"];
+  a -> b[style=dashed];
+  a -> file;
+
+  b[label="<fn(file)>"];
+  b -> a[weight=2,style=dashed];
+  b -> file[style=dashed];
+}
+```
 
 Sadly, things aren't this simple - our graph now has loops in it - we need to read from the file before closing it, and
 so cannot move it to the return point. Instead, we fall back to the default behaviour of variables - binding them and
 using it:
 
-![The final graph, ready for emitting.](/assets/img/posts/amulet-backend-file-03.png)
+```{.dot title="The final graph, ready for emitting."}
+digraph G {
+  rankdir = "BT";
+  clusterrank = "local";
+  ordering = "in";
+
+  file[label="<local file = input_file(name)>"];
+
+  result[label="<local result = fn(file)>"];
+  result -> file[style=dashed];
+  result -> file;
+
+  a[label="let a = <close_in(file)>"];
+  a -> result[style=dashed];
+  a -> file;
+
+  b[label="<return result>"];
+  b -> result;
+  b -> a[weight=2,style=dashed];
+}
+```
 
 ## Handling control flow
 So far, we've only discussed how to compile long chains of `let`s. How do we handle control flow - namely `match`?

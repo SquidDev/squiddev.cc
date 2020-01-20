@@ -13,6 +13,7 @@ import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Digest.Pure.SHA as SHA
 import qualified Data.HashSet as HSet
 import qualified Data.Text.Lazy as L
+import qualified Data.Text as T
 import Data.Function
 import Data.Functor
 import Data.Default
@@ -290,11 +291,18 @@ writerOptions = do
     , writerSyntaxMap = syntaxMap
     }
 
--- | The Pandoc compiler, but using our custom 'writerOptions'.
+-- | The Pandoc compiler, with additional transforms and options.
+--
+-- Along with using 'writerOptions', this also performs the following
+-- translations:
+--
+--  - LaTeX math expressions shell out to katex
+--  - Code blocks of language "dot" shell out to graphviz.
 pandocCustomCompiler :: Compiler (Item String)
 pandocCustomCompiler = do
   writer <- writerOptions
-  pandocCompilerWithTransformM defaultHakyllReaderOptions writer (walkM transformInline)
+  pandocCompilerWithTransformM defaultHakyllReaderOptions writer
+    (walkM transformInline >=> walkM (concatMapA transformBlock))
   where
     transformInline :: Inline -> Compiler Inline
     transformInline (Math kind math) = unsafeCompiler $ do
@@ -304,6 +312,38 @@ pandocCustomCompiler = do
       (contents, _) <- readProcessBS "node_modules/.bin/katex" args . L.encodeUtf8 . L.pack $ math
       pure . RawInline "html" . L.unpack . L.decodeUtf8 $ contents
     transformInline x = pure x
+
+    transformBlock :: Block -> Compiler [Block]
+    transformBlock (CodeBlock ("", ["dot"], attrs) text) = do
+      (contents, _) <- unsafeCompiler . readProcessBS "dot" ["-Tsvg"] . L.encodeUtf8 . L.pack $ text
+      let xml = withTags (stripTag attrs) . L.unpack . L.decodeUtf8 $ contents
+      case find (\(k, _) -> k == "title") attrs of
+        Nothing -> pure [RawBlock "html" xml]
+        Just (_, title) -> do
+          caption <- captionReader title
+          pure [ RawBlock "html" ("<figure>" ++ xml ++ "<figcaption>")
+               , Plain caption
+               , RawBlock "html" "</figcaption></figure>" ]
+    transformBlock x = pure [x]
+
+    stripTag _ t@(TS.TagOpen "?xml" _)     = TS.TagComment (TS.renderTags [t])
+    stripTag _ t@(TS.TagOpen "!DOCTYPE" _) = TS.TagComment (TS.renderTags [t])
+    stripTag a (TS.TagOpen "svg" attr')    = TS.TagOpen "svg" (a ++ attr')
+    stripTag _ x = x
+
+-- | Read a figure caption in Markdown format. LaTeX math @$...$@ is
+-- supported, as are Markdown subscripts and superscripts.
+captionReader :: String -> Compiler [Inline]
+captionReader t
+  = either (const (throwError ["Cannot compile '" ++ t ++ "'"])) (pure . extractFromBlocks)
+  . runPure . readMarkdown defaultHakyllReaderOptions . T.pack $ t
+  where
+    extractFromBlocks (Pandoc _ blocks) = mconcat $ extractInlines <$> blocks
+
+    extractInlines (Plain inlines)          = inlines
+    extractInlines (Para inlines)           = inlines
+    extractInlines (LineBlock multiinlines) = join multiinlines
+    extractInlines _                        = []
 
 -- | A ByteString equivalent of readProcessWithExitCode (with some more exceptions)
 readProcessBS :: FilePath -> [String] -> BS.ByteString -> IO (BS.ByteString, String)
@@ -349,3 +389,7 @@ readProcessBS path args input =
         tid <- forkIO $ try (restore async) >>= putMVar waitVar
         let wait = takeMVar waitVar >>= either throwIO return
         restore (body wait) `onException` killThread tid
+
+concatMapA :: Applicative f => (a -> f [b]) -> [a] -> f [b]
+concatMapA _ [] = pure []
+concatMapA f (x:xs) = (++) <$> f x <*> concatMapA f xs

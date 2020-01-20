@@ -8,6 +8,7 @@ This website is written generated using [Hakyll][hakyll], and can be built with
 interesting, though there's some things which may be of value to a Hakyll user:
 
  - Compiling `.dot` files to `.png`.
+ - Inline compiling of `dot` code blocks and LaTeX math to SVG.
  - Syntax highlighting for other languages. This is not currently used, but may
    be useful.
  - Draft posts.

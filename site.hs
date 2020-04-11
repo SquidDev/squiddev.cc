@@ -76,7 +76,7 @@ main =
         route idRoute
 
         compile $
-          let ctx = listField "posts" postCtx (fmap (take 5) . recentFirst =<< loadAll "posts/*")
+          let ctx = listField "posts" postCtx (recentFirst =<< loadAll "posts/*")
                  <> defaultContext
            in getResourceBody
           >>= applyAsTemplate ctx

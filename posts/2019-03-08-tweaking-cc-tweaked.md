@@ -2,7 +2,7 @@
 title: "Tweaking the internals of CC: Tweaked"
 date: 2019-03-08 20:11:00
 description: "We discuss some of the latest changes made to CC: Tweaked."
-tags: minecraft computercraft cobalt compilers
+tags: minecraft computercraft cobalt compilers lua
 math: true
 ---
 

@@ -42,9 +42,10 @@ more sane.
 
 Ideally in the future, we would be able to move Cobalt to use one thread for all coroutines, which would substantially
 reduce the number of threads used (of the server's ~1.2k threads, ~1.1k are created by ComputerCraft), however that is
-still a way away. This'll have to do for now...
+still a way away. This'll have to do for now...[^1]
 
 I'm sure there was a point for me writing this massive wall of text, but it eludes me. I hope somebody maybe finds this
 a little bit interesting :).
 
 [release]: https://github.com/SquidDev-CC/CC-Tweaked/releases/tag/v1.80pr1.11 "Release notes for CC:T 1.80pr1.11"
+[^1]: This was later implemented, [see this post](/2019/03/08/tweaking-cc-tweaked.html) for details.

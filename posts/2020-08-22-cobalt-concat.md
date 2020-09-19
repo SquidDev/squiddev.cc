@@ -59,7 +59,7 @@ The insight here is that we don't actually _need_ to allocate a full byte array 
 when we come to operate on the string, but that's only the final result. Instead, let's represent our intermediate
 string as a [_Rope_][rope].
 
-Ropes are effectively just a binary tree, with the leafs containing the strings which make up the full rope. As
+Ropes are effectively just a binary tree, with the leaf's containing the strings which make up the full rope. As
 concatenation is just building a new tree from two smaller ones, it's simple. And, more importantly, fast - it runs in
 $O(1)$.
 
@@ -82,8 +82,9 @@ for improvement - `table.concat` is still faster, albeit no longer quite as dram
 
 [Cobalt]: https://github.com/SquidDev/Cobalt "Cobalt's GitHub repository."
 [tweaking]: /2019/03/08/tweaking-cc-tweaked.html "Tweaking CC: Tweaked"
-[puc]: https://www.lua.org/
-[patch]: https://github.com/SquidDev/Cobalt/pull/44
+[puc]: https://www.lua.org/ "Lua's website."
+[patch]: https://github.com/SquidDev/Cobalt/pull/44 "The relevent PR"
+[rope]: https://en.wikipedia.org/wiki/Rope_(data_structure) "Ropes on Wikipedia"
 
 [^1]: I'm using PUC Lua to distinguish the [standard Lua distribution][puc] compared with alternative implementations like
     LuaJIT, Rembulan or even Cobalt.

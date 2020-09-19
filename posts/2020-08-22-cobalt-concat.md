@@ -6,7 +6,7 @@ tags: cobalt lua compilers
 math: true
 ---
 
-One of the more practical projects is [Cobalt], a Java implementation of the Lua 5.1 virtual machine. I'm often working
+One of my more practical projects is [Cobalt], a Java implementation of the Lua 5.1 virtual machine. I'm often working
 on it, improving the code base [or bringing it closer to PUC Lua][tweaking]. One recent improvement I've made is with
 _string concatenation_.
 
@@ -61,7 +61,7 @@ string as a [_Rope_][rope].
 
 Ropes are effectively just a binary tree, with the leafs containing the strings which make up the full rope. As
 concatenation is just building a new tree from two smaller ones, it's simple. And, more importantly, fast - it runs in
-`$O(1)$`.
+$O(1)$.
 
 ```java
 class StringLike {}

@@ -59,7 +59,7 @@ The insight here is that we don't actually _need_ to allocate a full byte array 
 when we come to operate on the string, but that's only the final result. Instead, let's represent our intermediate
 string as a [_Rope_][rope].
 
-Ropes are effectively just a binary tree, with the leaf's containing the strings which make up the full rope. As
+Ropes are effectively just a binary tree, with the leaves containing the strings which make up the full rope. As
 concatenation is just building a new tree from two smaller ones, it's simple. And, more importantly, fast - it runs in
 $O(1)$.
 

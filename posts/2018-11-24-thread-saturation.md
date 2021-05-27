@@ -18,7 +18,8 @@ of time waiting for other threads to finish, and so lagging the sever.
 
 While we were able to fix this quite quickly (it turned out the lock wasn't really needed), we started having other
 issues - somehow, Java had created far too many threads, and so was unable to execute critical tasks. We didn't
-previously keep track of how many threads the JVM was using, but after adding that, we were able to see there was a bit of a problem].
+previously keep track of how many threads the JVM was using, but after adding that, we were able to see there was a bit
+of a problem.
 
 ![The original plot of total and live threads. The total thread count reaches 250k in less than 1.5 hours.](/assets/img/posts/2018-11-24-thread-saturation-250k.png)
 

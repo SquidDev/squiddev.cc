@@ -1,6 +1,6 @@
 ---
 title: Optimising Lua's string concatenation
-date: 2020-05-08 16:42:00
+date: 2020-08-22 12:34:00
 description: A writeup of the recent work to optimise monitor rendering.
 tags: cobalt lua compilers
 math: true
@@ -89,4 +89,4 @@ for improvement - `table.concat` is still faster, albeit no longer quite as dram
 [^1]: I'm using PUC Lua to distinguish the [standard Lua distribution][puc] compared with alternative implementations like
     LuaJIT, Rembulan or even Cobalt.
 [^2]: For instance, many Lua implementations cache the string's hash.
-[^3]: String concatenation is right-associative in Lua. We'll get onto that in a moment.
+[^3]: String concatenation is right-associative in Lua.

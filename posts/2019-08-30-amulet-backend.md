@@ -6,7 +6,7 @@ tags: haskell amulet compilers lua
 math: true
 ---
 
-[Amulet][amulet] is a small little language [Abigail][abigail] and I have been working on for a wee while. It's
+[Amulet][amulet] is a small little language [Amélia] and I have been working on for a wee while. It's
 syntactically pretty similar to most MLs, albeit with a type system closer to Haskell's.
 
 However, unlike most MLs or Haskell, Amulet is designed to compile to Lua - a lightweight, dynamically typed language
@@ -445,7 +445,7 @@ function are not compiled to loops. We're still discussing whether this should b
 with join points or [CwCwW][cwc]'s $\mathscr{C}$ operator, but it should hopefully appear in the next five years.
 
 [amulet]: https://github.com/amuletml/amulet/ "Amulet's GitHub repository"
-[abigail]: https://abby.how/ "Abigail's personal website. Plenty of Amulet stuff here too!"
+[Amélia]: https://amelia.how/ "Amélia's personal website and blog. Plenty of Amulet stuff here too!"
 [bug]: https://github.com/tmpim/amulet/issues/163 "Issue #163 on GitHub - Ordering can ignore IO in non-inlined cases"
 [anf]: https://en.wikipedia.org/wiki/A-normal_form
 [cwc]: https://www.cs.purdue.edu/homes/rompf/papers/cong-preprint201811.pdf "Compiling with Continuations, or without? Whatever."

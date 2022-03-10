@@ -4,8 +4,6 @@ module Main(main) where
 
 import Control.Monad.Except
 
-import Control.DeepSeq (rnf)
-import Control.Concurrent
 import Control.Exception
 
 import qualified Data.ByteString.Lazy.Char8 as BS
@@ -31,9 +29,7 @@ import Hakyll
 
 import qualified Skylighting as S
 
-import System.IO
-import System.Process
-import System.Exit
+import System.Process.Typed
 
 -- | Compress the HTML and CSS today.
 compress :: Bool
@@ -67,9 +63,9 @@ main =
       compile $ do
         input <- itemBody <$> getResourceLBS
         (output, err) <-
-          (unsafeCompiler . try $ readProcessBS "dot" ["-T", "png"] input)
+          (unsafeCompiler . try $ readProcess_ (setStdin (byteStringInput input) $ proc "dot" ["-T", "png"]))
           >>= either (fail . (displayException :: SomeException -> String)) pure
-        unless (null err) (throwError [err])
+        unless (BS.null err) (throwError [L.unpack . L.decodeUtf8 $ err])
         makeItem output
 
     match "index.html" $ do
@@ -106,9 +102,9 @@ main =
 
     match "syntax/*.xml" $ compile $ do
       path <- toFilePath <$> getUnderlying
-      contents <- itemBody <$> getResourceBody
+      contents <- itemBody <$> getResourceLBS
       debugCompiler ("Loaded syntax definition from " ++ show path)
-      res <- unsafeCompiler (S.parseSyntaxDefinitionFromString path contents)
+      let res = S.parseSyntaxDefinitionFromText path (L.decodeUtf8 contents)
       _ <- saveSnapshot "syntax" =<< case res of
         Left e -> fail e
         Right x -> makeItem x
@@ -309,19 +305,18 @@ pandocCustomCompiler = do
       let args = case kind of
             DisplayMath -> ["-Sd"]
             InlineMath -> ["-S"]
-      (contents, _) <- readProcessBS "node_modules/.bin/katex" args . L.encodeUtf8 . L.pack $ math
-      pure . RawInline "html" . L.unpack . L.decodeUtf8 $ contents
+      RawInline "html" <$> readProcessText "node_modules/.bin/katex" args math
     transformInline x = pure x
 
     transformBlock :: Block -> Compiler [Block]
     transformBlock (CodeBlock ("", ["dot"], attrs) text) = do
-      (contents, _) <- unsafeCompiler . readProcessBS "dot" ["-Tsvg"] . L.encodeUtf8 . L.pack $ text
-      let xml = withTags (stripTag attrs) . L.unpack . L.decodeUtf8 $ contents
+      contents <- unsafeCompiler $ readProcessText "dot" ["-Tsvg"] text
+      let xml = TS.renderTags . map (stripTag attrs) $ TS.parseTags contents
       case find (\(k, _) -> k == "title") attrs of
         Nothing -> pure [RawBlock "html" xml]
         Just (_, title) -> do
           caption <- captionReader title
-          pure [ RawBlock "html" ("<figure>" ++ xml ++ "<figcaption>")
+          pure [ RawBlock "html" (T.concat ["<figure>", xml, "<figcaption>"])
                , Plain caption
                , RawBlock "html" "</figcaption></figure>" ]
     transformBlock x = pure [x]
@@ -333,10 +328,10 @@ pandocCustomCompiler = do
 
 -- | Read a figure caption in Markdown format. LaTeX math @$...$@ is
 -- supported, as are Markdown subscripts and superscripts.
-captionReader :: String -> Compiler [Inline]
+captionReader :: T.Text -> Compiler [Inline]
 captionReader t
-  = either (const (throwError ["Cannot compile '" ++ t ++ "'"])) (pure . extractFromBlocks)
-  . runPure . readMarkdown defaultHakyllReaderOptions . T.pack $ t
+  = either (const (throwError ["Cannot compile '" ++ T.unpack t ++ "'"])) (pure . extractFromBlocks)
+  . runPure . readMarkdown defaultHakyllReaderOptions $ t
   where
     extractFromBlocks (Pandoc _ blocks) = mconcat $ extractInlines <$> blocks
 
@@ -345,51 +340,11 @@ captionReader t
     extractInlines (LineBlock multiinlines) = join multiinlines
     extractInlines _                        = []
 
--- | A ByteString equivalent of readProcessWithExitCode (with some more exceptions)
-readProcessBS :: FilePath -> [String] -> BS.ByteString -> IO (BS.ByteString, String)
-readProcessBS path args input =
-  let process = (proc path args)
-        { std_in = CreatePipe
-        , std_out = CreatePipe
-        , std_err = CreatePipe
-        }
-  in withCreateProcess process $ \stdin stdout stderr ph ->
-    case (stdin, stdout, stderr) of
-      (Nothing, _, _) -> fail "Failed to get a stdin handle."
-      (_, Nothing, _) -> fail "Failed to get a stdout handle."
-      (_, _, Nothing) -> fail "Failed to get a stderr handle."
-      (Just stdin, Just stdout, Just stderr) -> do
-        out <- BS.hGetContents stdout
-        err <- hGetContents stderr
-
-        withForkWait (evaluate $ rnf out) $ \waitOut ->
-          withForkWait (evaluate $ rnf err) $ \waitErr -> do
-            -- Write input and close.
-            BS.hPut stdin input
-            hClose stdin
-
-            -- wait on the output
-            waitOut
-            waitErr
-
-            hClose stdout
-            hClose stderr
-
-            -- wait on the process
-            ex <- waitForProcess ph
-            case ex of
-              ExitSuccess -> pure (out, err)
-              ExitFailure ex -> fail (err ++ "Exited with " ++ show ex)
-
-  where
-    withForkWait :: IO () -> (IO () ->  IO a) -> IO a
-    withForkWait async body = do
-      waitVar <- newEmptyMVar :: IO (MVar (Either SomeException ()))
-      mask $ \restore -> do
-        tid <- forkIO $ try (restore async) >>= putMVar waitVar
-        let wait = takeMVar waitVar >>= either throwIO return
-        restore (body wait) `onException` killThread tid
-
 concatMapA :: Applicative f => (a -> f [b]) -> [a] -> f [b]
 concatMapA _ [] = pure []
 concatMapA f (x:xs) = (++) <$> f x <*> concatMapA f xs
+
+readProcessText :: String -> [String] -> T.Text -> IO T.Text
+readProcessText cmd args input =
+  L.toStrict . L.decodeUtf8
+  <$> readProcessStdout_ (setStdin (byteStringInput . L.encodeUtf8 . L.fromStrict $ input) (proc cmd args))

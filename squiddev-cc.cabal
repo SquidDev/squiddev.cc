@@ -11,7 +11,7 @@ cabal-version:       >=2.0
 
 executable site
   main-is:             site.hs
-  build-depends:       base >= 4.9 && < 4.15
+  build-depends:       base >= 4.9 && < 4.16
                      , SHA >= 1.6 && < 2.0
                      , bytestring >= 0.10 && < 0.11
                      , data-default >= 0.7 && < 0.8
@@ -23,7 +23,7 @@ executable site
                      , mtl >= 2.2.2 && < 3.0
                      , pandoc >= 2.2 && < 3.0
                      , pandoc-types >= 1.17 && < 2.0
-                     , skylighting >= 0.7 && < 0.12
+                     , skylighting >= 0.7 && < 0.13
                      , tagsoup >= 0.14 && < 0.15
                      , text >= 1.2 && < 1.3
                      , time >= 1.8 && < 1.10

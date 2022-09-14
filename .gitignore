@@ -1,5 +1,4 @@
 /_site
 /_cache
-/.ghc.environment.*
-/.stack-work
 /node_modules
+/result

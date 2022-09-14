@@ -2,8 +2,9 @@
 
 module Main(main) where
 
-import Control.Monad.Except
+import qualified GHC.IO.Encoding as Encoding
 
+import Control.Monad.Except
 import Control.Exception
 
 import qualified Data.ByteString.Lazy.Char8 as BS
@@ -40,8 +41,12 @@ compresses :: Applicative m => (a -> m a) -> a -> m a
 compresses f = if compress then f else pure
 
 main :: IO ()
-main =
-  hakyllWith def { previewPort = 8080 } $
+main = do
+  Encoding.setLocaleEncoding Encoding.utf8
+  hakyllWith def { previewPort = 8080 } rules
+
+rules :: Rules ()
+rules =
   do
     match "assets/*.svg" $ do
         route idRoute
@@ -305,7 +310,7 @@ pandocCustomCompiler = do
       let args = case kind of
             DisplayMath -> ["-Sd"]
             InlineMath -> ["-S"]
-      RawInline "html" <$> readProcessText "node_modules/.bin/katex" args math
+      RawInline "html" <$> readProcessText "katex" args math
     transformInline x = pure x
 
     transformBlock :: Block -> Compiler [Block]

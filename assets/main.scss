@@ -265,3 +265,8 @@ header {
         a { display: block; text-align: center; }
     }
 }
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: optimizequality;
+}

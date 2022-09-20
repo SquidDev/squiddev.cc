@@ -1,11 +1,12 @@
 {
   description = "My personal website, hosted at squiddev.cc and joncoates.co.uk";
+
   inputs.utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, utils }:
     let
       name = "squiddev-cc";
-      compiler = "ghc924";
+      compiler = "924";
     in utils.lib.eachSystem ["x86_64-linux"] (system:
       let
         pkgs = import nixpkgs { inherit system; };
@@ -22,7 +23,7 @@
         siteBin =
           let
             src = pkgs.lib.sourceFilesBySuffices ./. [".hs" ".cabal" "LICENSE"];
-            pkg = pkgs.haskell.packages."${compiler}".callCabal2nix "${name}-bin" src {};
+            pkg = pkgs.haskell.packages."ghc${compiler}".callCabal2nix "${name}-bin" src {};
           in
           pkgs.haskell.lib.overrideCabal pkg {
             buildTools = [pkgs.makeBinaryWrapper];
@@ -53,7 +54,10 @@
         apps.default = utils.lib.mkApp { drv = siteBin; exePath = "/bin/site"; };
 
         devShells.default = pkgs.mkShell {
-          packages = runtimePkgs ++ [pkgs.cabal-install];
+          packages = runtimePkgs ++ [
+            pkgs.cabal-install
+            (pkgs.haskell-language-server.override { supportedGhcVersions = [ compiler ]; })
+          ];
           inputsFrom = [siteBin.env];
         };
       }

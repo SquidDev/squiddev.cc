@@ -1,31 +1,34 @@
-{-# LANGUAGE FlexibleContexts, MultiWayIf, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, MultiWayIf, OverloadedStrings, ScopedTypeVariables #-}
 
 module Main(main) where
 
 import qualified GHC.IO.Encoding as Encoding
 
+import System.Directory
+
 import Control.Monad.Except
 import Control.Exception
 
 import qualified Data.ByteString.Lazy.Char8 as BS
+import qualified Data.ByteString.Base64.Lazy as BS
 import qualified Data.Text.Lazy.Encoding as L
 import qualified Data.Digest.Pure.SHA as SHA
 import qualified Data.HashSet as HSet
 import qualified Data.Text.Lazy as L
 import qualified Data.Text as T
 import Data.Function
+import Data.Foldable
 import Data.Functor
 import Data.Default
 import Data.List
 import Data.Char
 
 import qualified Text.HTML.TagSoup as TS
-import Text.Sass.Functions
 import Text.Pandoc.Walk
 import Text.Pandoc
+import Text.Sass
 
 import Hakyll.Core.Configuration
-import Hakyll.Web.Sass
 import Hakyll
 
 import qualified Skylighting as S
@@ -55,9 +58,9 @@ rules =
 
     match "assets/main.scss" $ do
         route $ setExtension "css"
-        compile $ sassCompilerWith def { sassOutputStyle = if compress then SassStyleCompressed else SassStyleExpanded
-                                       , sassImporters = Just [ sassImporter ]
-                                       }
+        compile sassCompiler
+
+    match ("assets/**.scss" .||. "node_modules/**.css" .||. "assets/*.embed.png") $ compile (makeItem ())
 
     match ("assets/**.png" .||. "favicon.ico" .||. "robots.txt") $ do
         route   idRoute
@@ -178,17 +181,35 @@ defaultTemplateWith ctx page
     & loadAndApplyTemplate "templates/default.html" (ctx <> siteCtx)
   >>= compresses minifyHtml
 
--- | A custom sass importer which also looks within @node_modules@.
-sassImporter :: SassImporter
-sassImporter = SassImporter 0 go where
-  go "normalize" _ = do
-    c <- readFile "node_modules/normalize.css/normalize.css"
-    pure [ SassImport { importPath = Nothing
-                      , importAbsolutePath = Nothing
-                      , importSource = Just c
-                      , importSourceMap = Nothing
-                      } ]
-  go _ _ = pure []
+-- | Compiles sass files to CSS.
+--
+-- Similar to that provided by hakyll-sass, but correctly handles
+-- dependencies.
+sassCompiler :: Compiler (Item String)
+sassCompiler = do
+  path <- getResourceFilePath
+  (contents, deps) <- unsafeCompiler $ do
+    result <- compileFile path options
+    case result of
+      Left err -> errorMessage err >>= fail
+      Right result -> do
+        lPath <- canonicalizePath path
+        includes <- resultIncludes result
+                >>= traverse canonicalizePath
+                <&> delete lPath
+                >>= traverse makeRelativeToCurrentDirectory
+        pure (resultString result, includes)
+
+  -- Mark each of these as a dependency.
+  traverse_ (fmap (\(_ :: Item ()) -> ()) . load . fromFilePath) deps
+  makeItem contents
+
+  where
+    options :: SassOptions
+    options = def
+      { sassOutputStyle = if compress then SassStyleCompressed else SassStyleExpanded
+      , sassIncludePaths = Just ["node_modules/normalize.css"]
+      }
 
 -- | Attempts to minify the HTML contents by removing all superfluous
 -- whitespace.
@@ -314,9 +335,10 @@ pandocCustomCompiler = do
     transformInline x = pure x
 
     transformBlock :: Block -> Compiler [Block]
-    transformBlock (CodeBlock ("", ["dot"], attrs) text) = do
+    transformBlock (CodeBlock ("", cls@("dot":_), attrs) text) = do
+      let attrs' = ("class", T.intercalate " " cls):attrs
       contents <- unsafeCompiler $ readProcessText "dot" ["-Tsvg"] text
-      let xml = TS.renderTags . map (stripTag attrs) $ TS.parseTags contents
+      xml <- fmap TS.renderTags . traverse (stripTag attrs') $ TS.parseTags contents
       case find (\(k, _) -> k == "title") attrs of
         Nothing -> pure [RawBlock "html" xml]
         Just (_, title) -> do
@@ -326,10 +348,16 @@ pandocCustomCompiler = do
                , RawBlock "html" "</figcaption></figure>" ]
     transformBlock x = pure [x]
 
-    stripTag _ t@(TS.TagOpen "?xml" _)     = TS.TagComment (TS.renderTags [t])
-    stripTag _ t@(TS.TagOpen "!DOCTYPE" _) = TS.TagComment (TS.renderTags [t])
-    stripTag a (TS.TagOpen "svg" attr')    = TS.TagOpen "svg" (a ++ attr')
-    stripTag _ x = x
+    stripTag _ t@(TS.TagOpen "?xml" _)     = pure $ TS.TagComment (TS.renderTags [t])
+    stripTag _ t@(TS.TagOpen "!DOCTYPE" _) = pure $ TS.TagComment (TS.renderTags [t])
+    stripTag _ (TS.TagOpen "image" (("xlink:href", img):atts))
+      | ".embed.png" `T.isSuffixOf` img = do
+      let path = T.unpack img
+      (_ :: Item ()) <- load $ fromFilePath path
+      contents <- fmap (L.decodeUtf8 . BS.encode) . unsafeCompiler $ BS.readFile path
+      pure $ TS.TagOpen "image" (("xlink:href", "data:image/png;base64," <> L.toStrict contents):atts)
+    stripTag a (TS.TagOpen "svg" attr')    = pure $ TS.TagOpen "svg" (a ++ attr')
+    stripTag _ x = pure x
 
 -- | Read a figure caption in Markdown format. LaTeX math @$...$@ is
 -- supported, as are Markdown subscripts and superscripts.

@@ -60,7 +60,7 @@ rules =
         route $ setExtension "css"
         compile sassCompiler
 
-    match ("assets/**.scss" .||. "node_modules/**.css" .||. "assets/*.embed.png") $ compile (makeItem ())
+    match ("assets/**.scss" .||. "node_modules/**.css" .||. "assets/**.embed.png") $ compile (makeItem ())
 
     match ("assets/**.png" .||. "favicon.ico" .||. "robots.txt") $ do
         route   idRoute

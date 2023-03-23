@@ -256,10 +256,11 @@ minifyHtml' = withTagList (walk [] [] []) where
   -- have leading/trailing spaces preserved.
   inline = flip HSet.member $ HSet.fromList
     [ "a", "abbr", "acronym", "b", "bdi", "bdo", "big", "button", "cite", "code"
-    , "del", "dfn", "em", "font", "figcaption", "i", "img", "input", "ins", "kbd"
-    , "label" , "li", "mark", "math", "nobr", "object", "p", "q", "rp", "rt"
-    , "rtc", "ruby", "s", "samp", "select", "small", "span", "strike", "strong"
-    , "sub", "sup", "svg", "textarea", "time", "tt", "u", "var", "wbr"
+    , "del", "dfn", "em", "font", "figcaption", "h1", "h2", "h3", "h4", "h5"
+    , "h6", "i", "img", "input", "ins", "kbd", "label" , "li", "mark", "math"
+    , "nobr", "object", "p", "q", "rp", "rt", "rtc", "ruby", "s", "samp"
+    , "select", "small", "span", "strike", "strong", "sub", "sup", "svg"
+    , "textarea", "time", "tt", "u", "var", "wbr"
     ]
 
   trim _ "" = ""

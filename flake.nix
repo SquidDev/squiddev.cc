@@ -23,7 +23,15 @@
         siteBin =
           let
             src = pkgs.lib.sourceFilesBySuffices ./. [".hs" ".cabal" "LICENSE"];
-            pkg = pkgs.haskell.packages."ghc${compiler}".callCabal2nix "${name}-bin" src {};
+            pkg = (pkgs.haskell.packages."ghc${compiler}".override {
+              overrides = self: super: {
+                mkDerivation = args: builtins.trace args.pname (super.mkDerivation (args // {
+                  doCheck = false;
+                  doHaddock = false;
+                  testHaskellDepends = [];
+                }));
+              };
+            }).callCabal2nix "${name}-bin" src {};
           in
           pkgs.haskell.lib.overrideCabal pkg {
             buildTools = [pkgs.makeBinaryWrapper];

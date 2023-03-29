@@ -25,11 +25,11 @@
             src = pkgs.lib.sourceFilesBySuffices ./. [".hs" ".cabal" "LICENSE"];
             pkg = (pkgs.haskell.packages."ghc${compiler}".override {
               overrides = self: super: {
-                mkDerivation = args: builtins.trace args.pname (super.mkDerivation (args // {
+                mkDerivation = args: super.mkDerivation (args // {
                   doCheck = false;
                   doHaddock = false;
                   testHaskellDepends = [];
-                }));
+                });
               };
             }).callCabal2nix "${name}-bin" src {};
           in

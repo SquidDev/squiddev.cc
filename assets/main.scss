@@ -7,11 +7,6 @@
     }
 }
 
-@mixin default-link {
-    @include link(#0000ee, darken(#0000ee, 20%));
-    a:hover { background-color: rgba(0,0,0,0.1); }
-}
-
 body {
     margin:40px auto;
     max-width:1000px;
@@ -26,7 +21,6 @@ body {
 }
 
 h1, h2, h3 { line-height:1.2 }
-a { text-decoration: none; }
 strong { font-weight: bold; }
 em { font-style: italic; }
 
@@ -118,8 +112,6 @@ header {
     }
 }
 
-
-
 .card {
     position: relative;
     box-sizing: border-box;
@@ -174,7 +166,10 @@ header {
        }
     }
 
-    a.card-link { color: inherit; }
+    a.card-link {
+      color: inherit;
+      text-decoration: none;
+    }
 
     a.card-link::before {
         content: "";
@@ -236,8 +231,10 @@ header {
         display: block;
     }
 
-    @include default-link
+    @include link(#0000ee, darken(#0000ee, 20%));
+    a:hover { background-color: rgba(0,0,0,0.1); }
 
+    a.footnote-ref { text-decoration: none; }
     .footnotes { font-size: 0.8em; }
 
     figcaption {

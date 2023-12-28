@@ -2,15 +2,6 @@
   description = "My personal website, hosted at squiddev.cc and joncoates.co.uk";
 
   inputs.utils.url = "github:numtide/flake-utils";
-  # We depend on the latest Pandoc release, as 3.0 isn't in nixpkgs yet.
-  inputs.doctemplates     = { url = "github:jgm/doctemplates/0.11"; flake = false; };
-  inputs.gridtables       = { url = "github:quarto-dev/gridtables/v0.1.0.0"; flake = false; };
-  inputs.hakyll           = { url = "github:jaspervdj/Hakyll/v4.16.0.0"; flake = false; };
-  inputs.jira-wiki-markup = { url = "github:tarleb/jira-wiki-markup/eddba79137d71261ba1a3800a611ef098e2ab655"; flake = false; };
-  inputs.mime-types       = { url = "github:yesodweb/wai/mime-types-0.1.1.0"; flake = false; };
-  inputs.pandoc           = { url = "github:jgm/pandoc/3.1.2"; flake = false; };
-  inputs.pandoc-types     = { url = "github:jgm/pandoc-types/1.23"; flake = false; };
-  inputs.texmath          = { url = "github:jgm/texmath/0.12.7.1"; flake = false; };
 
   outputs = { self, nixpkgs, utils, ... } @ inputs:
     let
@@ -26,30 +17,12 @@
           pkgs.nodePackages.katex
         ];
 
-        # Build a haskell package without docs or tests, for a slimmer build.
-        noJunk = x: pkgs.haskell.lib.overrideCabal x {
-          doCheck = false;
-          doHaddock = false;
-          testHaskellDepends = [];
-        };
-
         # Create a package just with the site generator using a minimal set of
         # sources. This saves us rebuilding it every time.
         siteBin =
           let
             src = pkgs.lib.sourceFilesBySuffices ./. [".hs" ".cabal" "LICENSE"];
-            pkg = (pkgs.haskellPackages.override {
-              overrides = self: super: {
-                doctemplates        = noJunk (self.callCabal2nix "doctemplates"     inputs.doctemplates {});
-                gridtables          = noJunk (self.callCabal2nix "gridtables"       inputs.gridtables {});
-                hakyll              = noJunk (self.callCabal2nix "hakyll"           inputs.hakyll  {});
-                jira-wiki-markup    = noJunk (self.callCabal2nix "jira-wiki-markup" inputs.jira-wiki-markup {});
-                mime-types          = noJunk (self.callCabal2nix "mime-types"       (inputs.mime-types + "/mime-types") {});
-                pandoc              = noJunk (self.callCabal2nix "pandoc"           inputs.pandoc {});
-                pandoc-types        = noJunk (self.callCabal2nix "pandoc-types"     inputs.pandoc-types {});
-                texmath             = noJunk (self.callCabal2nix "texmath"          inputs.texmath {});
-              };
-            }).callCabal2nix "${name}-bin" src {};
+            pkg = pkgs.haskellPackages.callCabal2nix "${name}-bin" src {};
           in
           pkgs.haskell.lib.overrideCabal pkg {
             buildTools = [pkgs.makeBinaryWrapper];

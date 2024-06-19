@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Clone repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: 📥 Set up Nix
+      uses: cachix/install-nix-action@v27
+
+    - name: ⚒️ Build
+      run: nix build -L .
+
+    - name: 📤 Upload site
+      uses: actions/upload-artifact@v3
+      with:
+        name: Site
+        path: result/
+        retention-days: 1

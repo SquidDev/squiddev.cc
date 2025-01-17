@@ -5,7 +5,7 @@
   "homepage": "https://github.com/SquidDev/squiddev.cc#readme",
   "dependencies": {},
   "devDependencies": {
-    "katex": "^0.16.10"
+    "katex": "^0.16.21"
   },
   "repository": {
     "type": "git",

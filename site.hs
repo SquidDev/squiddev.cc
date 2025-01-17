@@ -8,6 +8,7 @@ import System.Directory
 
 import Control.Monad.Except
 import Control.Exception
+import Control.Monad
 
 import qualified Data.ByteString.Lazy.Char8 as BS
 import qualified Data.ByteString.Base64.Lazy as BS

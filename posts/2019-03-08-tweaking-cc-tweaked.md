@@ -115,7 +115,7 @@ so computers are relatively responsive. However, when you've got badly written (
 a world of difference - one is able to interact with a computer with negligible latency!
 
 I feel it's also worth mentioning that as part of these changes, we rewrote the entire threading system in an effort to
-make it simpler and more rohbust. Not only has this fixed a rather annoying deadlock when killing a computer, we now use
+make it simpler and more robust. Not only has this fixed a rather annoying deadlock when killing a computer, we now use
 half as many threads within the executor[^2].
 
 ## Where now?
